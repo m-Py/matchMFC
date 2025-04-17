@@ -26,12 +26,8 @@
 #' @export
 #'
 
-ilp_to_groups <- function(ilp, solution, items) {
-  assignment <- fill_groups_wce(ilp, solution)
-  ## the following works because correct order of items is ensured
-  ## through function group_assignment, that sorts by item
-  assignment <- data.frame(assignment, items)
-  return(assignment)
+ilp_to_groups <- function(ilp, solution) {
+  fill_groups_wce(ilp, solution)
 }
 
 
@@ -59,7 +55,7 @@ fill_groups_wce <- function(ilp, solution) {
                                 list_length(assignment_list)))
   ret <- ret[order(ret$item), ]
   rownames(ret) <- NULL
-  return(ret)
+  return(ret$group)
 }
 
 

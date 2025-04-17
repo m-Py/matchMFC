@@ -6,6 +6,9 @@
 #' @param p The number of groups to be created
 #' @param solver A string identifing the solver to be used ("Rglpk",
 #'   "gurobi", or "cplex")
+#' @param positives Logical: Is each item positively coded?
+#' @param max_only_positives how many clusters should maximally have more
+#' @param max_only_negatives how many clusters should maximally have more
 #'
 #' @return A list representing ILP formulation of the instance
 #'
@@ -23,7 +26,10 @@
 #' Anjos, “Branch-and-price for p-cluster editing,” Computational
 #' Optimization and Applications, vol. 67, no. 2, pp. 293–316, 2017.
 
-item_assign_ilp <- function(distances, p, solver = "Rglpk") {
+item_assign_ilp <- function(
+    distances, p, solver = "Rglpk", is_in_minority_class=NULL) {
+
+
 
   ## identify solver because they use different identifiers for
   ## equality:
@@ -63,7 +69,9 @@ item_assign_ilp <- function(distances, p, solver = "Rglpk") {
 
   ## How many decision variables do I have? Edges + coding of cluster
   ## leadership for each item.
-  n_vars <- nrow(costs) + n_items
+
+
+  n_vars <- nrow(costs) + sum(is_in_minority_class)
 
   ## Compute the number of constraints:
   ## The number of triangular constraints:
@@ -72,9 +80,10 @@ item_assign_ilp <- function(distances, p, solver = "Rglpk") {
   ## numbers are taken from Bulhoes et al. 2017 ("Branch-and-price")
   n_c5 <- 1
   ## The number of constraints for constraint (6):
-  n_c6 <- nrow(costs) ## for each decision var x_ij one constraint
+  minority_IDs <- which(is_in_minority_class)
+  n_c6 <- nrow(costs[costs$j %in% minority_IDs, ]) ## for each decision var x_ij one constraint; but only items that can be cluster leaders (that are in the minority class)
   ## The number of constraints for constraint (7):
-  n_c7 <- n_items - 1 ## for each but the first item one constraint
+  n_c7 <- sum(is_in_minority_class) - 1 ## for each but the first item one constraint
   ## The number of constraints for constraint (8):
   n_c8 <- 1
   ## Number of constraints enforcing the size of the groups:
@@ -87,10 +96,10 @@ item_assign_ilp <- function(distances, p, solver = "Rglpk") {
   ## a constraint.
 
   constraints <- matrix(0, ncol = n_vars, nrow = n_constraints)
-  colnames(constraints) <- c(costs$pair, paste0("y", 1:n_items))
+  colnames(constraints) <- c(costs$pair, paste0("y", minority_IDs))
   ## Use row and column names to identify the decision variables and
   ## the constraints. row names: "tc" are triangular constraints.
-    rownames(constraints) <- c(paste0("tc", 1:n_tris), "c5",
+  rownames(constraints) <- c(paste0("tc", 1:n_tris), "c5",
                                paste0("c6_", 1:n_c6),
                                paste0("c7_", 1:n_c7),
                                "c8", paste0("c9_", 1:n_c9))
@@ -109,7 +118,9 @@ item_assign_ilp <- function(distances, p, solver = "Rglpk") {
         constraints[offset + 1, paste0("x", i, j)] <- -1
         constraints[offset + 1, paste0("x", i, k)] <- 1
         constraints[offset + 1, paste0("x", j, k)] <- 1
-        constraints[offset + 1, paste0("y", k)] <- 1
+        if (k %in% minority_IDs) {
+          constraints[offset + 1, paste0("y", k)] <- 1
+        }
         ## triangular constraint 2
         constraints[offset + 2, paste0("x", i, j)] <- 1
         constraints[offset + 2, paste0("x", i, k)] <- -1
@@ -123,8 +134,10 @@ item_assign_ilp <- function(distances, p, solver = "Rglpk") {
       }
     }
   }
-  constraints <- insert_group_contraints(constraints, n_items, i, j, group_size)
-
+  constraints <- insert_group_contraints(
+    constraints, n_items,
+    is_in_minority_class
+  )
 
   ## Make the to-be-returned constraint matrix take less storage
   ## as a sparse matrix: (TODO: make it sparse from the beginning)
@@ -140,14 +153,14 @@ item_assign_ilp <- function(distances, p, solver = "Rglpk") {
 
     ## (8) right hand side of the ILP <- many ones
     rhs <- c(rep(1, nrow(constraints) - 1 - n_c9),
-             p, rep(group_size - 1, n_c9)) #  p = number of clusters
+             p, rep(group_size - 1, n_c9)) #  p = number of clusters || maximum group must not be cluster leader
 
 
   ## (9) Construct objective function. Add values for the cluster leader
   ## decision variables to the objective functions. These must be 0
   ## because they are not part of the objective function, but they are
   ## needed for the standard form of the ILP
-  obj_function <- c(costs$costs, rep(0, n_items))
+  obj_function <- c(costs$costs, rep(0, sum(is_in_minority_class)))
 
   ## give names to all objects for inspection of the matrix
   names(rhs) <- rownames(constraints)
@@ -170,16 +183,18 @@ item_assign_ilp <- function(distances, p, solver = "Rglpk") {
 
 ## This function inserts constraints concerned with cluster number and cluster
 ## size
-insert_group_contraints <- function(constraints, n_items, i, j, group_size) {
+insert_group_contraints <- function(constraints, n_items, is_in_minority_class) {
+
+  IDs <- which(is_in_minority_class)
   ## (2) Constraint (5): make first element leader of cluster
-  constraints["c5", "y1"] <- 1
+  constraints["c5", paste0("y", IDs[1])] <- 1
 
   ## (3) Constraint (6): restrictions on cluster leadership
   ## y_j <= 1 - x_ij <=> y_j + x_ij <= 1
 
   counter <- 1
   for (i in 1:n_items) {
-    for (j in 2:n_items) {
+    for (j in IDs[-1]) {
       if (i >= j) next
       constraints[paste0("c6_", counter), paste0("x", i, j)] <- 1
       constraints[paste0("c6_", counter), paste0("y", j)] <- 1
@@ -190,9 +205,9 @@ insert_group_contraints <- function(constraints, n_items, i, j, group_size) {
   ## (4) Constraint (7): more restrictions on cluster leadership
   ## y_j >= 1 - sum(x_ij) <=> y_j + sum(x_ij) >= 1
   counter <- 1
-  for (j in 2:n_items) {
+  for (j in IDs[-1]) {
     constraints[paste0("c7_", counter), paste0("y", j)] <- 1
-    for (i in 1:n_items) {
+    for (i in IDs) {
       if (i >= j) next
       constraints[paste0("c7_", counter), paste0("x", i, j)] <- 1
     }
@@ -200,7 +215,7 @@ insert_group_contraints <- function(constraints, n_items, i, j, group_size) {
   }
 
   ## (5) Constraint (8): Specify number of clusters
-  constraints["c8", paste0("y", 1:n_items)] <- 1
+  constraints["c8", paste0("y", IDs)] <- 1
 
   ## (6) Add constraint forcing the clusters to be of equal size (I call
   ## it constraint (9) but it is not taken from Bulhoes 2017)

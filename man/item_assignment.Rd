@@ -4,8 +4,7 @@
 \alias{item_assignment}
 \title{Solve an instance of item assignment}
 \usage{
-item_assignment(items, n_groups, solver, standardize = FALSE,
-  heuristic = 2)
+item_assignment(items, n_groups, solver, standardize = FALSE, heuristic = 2)
 }
 \arguments{
 \item{items}{A data.frame of item features. Rows must correspond to

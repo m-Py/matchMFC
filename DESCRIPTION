@@ -11,7 +11,6 @@ Description: `anticlust` is an R package to solve the anticlustering problem,
 Encoding: UTF-8
 License: Undecided
 LazyData: true
-RoxygenNote: 6.1.0
+RoxygenNote: 7.3.2
 Imports: dplyr, reshape2, Matrix
 Suggests: gurobi, Rglpk, Rcplex
-

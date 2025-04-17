@@ -26,48 +26,11 @@
 #'
 #' @export
 #'
-item_assignment <- function(items, n_groups, solver, standardize = FALSE,
-                            heuristic = 2) {
-
-  ## some input handling
-  if (!(heuristic %in% 0:3)) {
-    stop("argument heuristic must have a value between 0 and 3")
-  }
-
-  ## standardize feature values? Save old values to be returned
-  items_old <- items
-  if (standardize) {
-    items <- scale(items)
-  }
-
-  n_items <- nrow(items)
-  distances <- dist(items)
-
-  if (heuristic == 1) {
-    ## 1. Clustering
-    ilp <- item_assign_ilp(distances, n_items / n_groups,
-                           solver = solver)
-    solution <- solve_ilp(ilp, solver, "min")
-    assignment <- ilp_to_groups(ilp, solution, items)
-    ## 2. Fix distances - ensure that the most similar items are put
-    ## to different groups
-    distances <- edit_distances(distances, assignment)
-  } else if (heuristic > 1) {
-    assignment <- equal_sized_clustering(data.frame(items), n_items / n_groups)
-    distances  <- edit_distances(distances, assignment)
-  }
-
-  if (heuristic == 3) {
-    assignment <- heuristic_item_assignment(assignment)
-    return(assignment)
-  }
-
-  ## The following creates the item assignment ILP formulation and
-  ## solves it:
-  ilp <- item_assign_ilp(distances, n_groups, solver = solver)
+item_assignment <- function(distances, n_groups, solver, is_in_minority_class) {
+  distances <- as.matrix(distances)
+  ilp <- item_assign_ilp(distances, n_groups, solver = solver, is_in_minority_class = is_in_minority_class)
   solution <- solve_ilp(ilp, solver)
-  assignment <- ilp_to_groups(ilp, solution, items_old)
-  return(assignment)
+  ilp_to_groups(ilp, solution)
 }
 
 #' Solve the ILP formulation of the item assignment problem
@@ -93,7 +56,7 @@ item_assignment <- function(items, n_groups, solver, standardize = FALSE,
 #' @export
 #'
 
-solve_ilp <- function(ilp, solver, objective = "max") {
+solve_ilp <- function(ilp, solver, objective = "min") {
 
   ret_list <- list() # return the optimal value and the variable assignment
 

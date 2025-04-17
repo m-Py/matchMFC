@@ -21,3 +21,12 @@ A list representing ILP formulation of the instance
 \description{
 Construct the ILP represenation of an item assignment problem
 }
+\references{
+T. Bulhões, G. F. de Sousa Filho, A. Subramanian, and F. C. Lucídio
+dos Anjos, “Branch-and-cut approaches for p-cluster editing,”
+Discrete Applied Mathematics, vol. 219, pp. 51–64, 2017.
+
+T. Bulhões, A. Subramanian, G. F. Sousa Filho, and F. C. Lucídio dos
+Anjos, “Branch-and-price for p-cluster editing,” Computational
+Optimization and Applications, vol. 67, no. 2, pp. 293–316, 2017.
+}
