@@ -71,6 +71,7 @@ solve_ilp <- function(ilp, solver, objective = "min") {
                                    rhs = ilp$rhs,
                                    types = "B",
                                    max = max)
+
     ret_list$x <- ilp_solution$solution
     ret_list$obj <- ilp_solution$optimum
     end <- Sys.time()
