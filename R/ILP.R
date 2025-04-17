@@ -29,6 +29,11 @@
 item_assign_ilp <- function(
     distances, p, solver = "Rglpk", is_in_minority_class=NULL) {
 
+  ## 3 types of constraints for negative_vs_positive should be implemented:
+  # a) (CURRENTLY THE ONLY OPTION) Positve items must not be cluster leaders (this is if there are at least p negatively poled items)
+  # b) All negative items must be cluster leaders (if fewer negatively poled items than )
+  # c) (THIS REQUIRES AN ADDITIONAL CONSTRAINT AS SUM OVER NEGATIVELY POLED ITEMS) Negatively poled items >= p, but we do not want to have them all as cluster leaders (e.g. because this makes the constraint on scale affiliation invalid; as should be in BIG 5 triplets)
+  if (sum(is_in_minority_class) < p) stop("Too few negatively poled items.")
 
 
   ## identify solver because they use different identifiers for
