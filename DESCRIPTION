@@ -1,16 +1,13 @@
-Package: anticlust
+Package: matchMFC
 Type: Package
-Title: Exact and heuristic methods for anticlustering and clustering
+Title: Match Multiple Forced Choice Items.
 Version: 0.1.0
 Author: Martin Papenberg
 Maintainer: Martin Papenberg <martin.papenberg@hhu.de>
-Description: `anticlust` is an R package to solve the anticlustering problem,
-    i.e., assigning elements to groups in such a way that the groups are as
-    similar as possible. The package also offers methods to solve traditional
-    clustering problems. 
+Description: Generates groups of Multiple Forced Choice (MFC) items by solving an Integer Linear Programming (ILP) model. 
 Encoding: UTF-8
-License: Undecided
+License: MIT + file license
 LazyData: true
 RoxygenNote: 7.3.2
-Imports: dplyr, reshape2, Matrix
+Imports: Matrix
 Suggests: gurobi, Rglpk, Rcplex
