@@ -1,5 +1,5 @@
 
-#' Construct the ILP represenation of an item assignment problem
+#' Construct the ILP represenation of an MFC item assignment problem
 
 #' @param distances An distance object or matrix representing the
 #'   distances between items
@@ -25,16 +25,25 @@
 #' T. Bulhões, A. Subramanian, G. F. Sousa Filho, and F. C. Lucídio dos
 #' Anjos, “Branch-and-price for p-cluster editing,” Computational
 #' Optimization and Applications, vol. 67, no. 2, pp. 293–316, 2017.
+#'
+#' Grötschel, M., & Wakabayashi, Y. (1989). A cutting plane algorithm for a clustering problem.
+#' Mathematical Programming, 45, 59-96.
+#'
+#' Papenberg, M., & Klau, G. W. (2021). Using anticlustering to partition data sets into equivalent parts.
+#' Psychological Methods, 26(2), 161--174. https://doi.org/10.1037/met0000301
+#'
 
 item_assign_ilp <- function(
-    distances, p, solver = "Rglpk", is_in_minority_class=NULL) {
+    distances, p, solver = "Rglpk", is_in_minority_class=NULL, n_leaders_minority=NULL) {
 
-  ## 3 types of constraints for negative_vs_positive should be implemented:
-  # a) (CURRENTLY THE ONLY OPTION) Positve items must not be cluster leaders (this is if there are at least p negatively poled items)
-  # b) All negative items must be cluster leaders (if fewer negatively poled items than )
-  # c) (THIS REQUIRES AN ADDITIONAL CONSTRAINT AS SUM OVER NEGATIVELY POLED ITEMS) Negatively poled items >= p, but we do not want to have them all as cluster leaders (e.g. because this makes the constraint on scale affiliation invalid; as should be in BIG 5 triplets)
-  if (sum(is_in_minority_class) < p) stop("Too few negatively poled items.")
-
+  ## This ILP is a mixture of several formulations from the literature, plus an
+  ## additional novel constraint that enforces the number of groups that have negatively coded items.
+  # a. It is a clique partitioning model using the "traditional" triangular constraints from Grötschel & Wakabayashi (1989).
+  # b. It uses additional constraints from #' T. Bulhões, et al. (2017) to enforce the number of item cluster.
+  # c. It uses additional constraints from Papenberg & Klau (2021) to enforce the number of items per cluster.
+  # d. It uses a novel constraint that uses decision variables from b. to enforce the number of groups that have negatively
+  #    coded items. (These additional decision variables are the primary reason why b. is used; actually, c. is already
+  #    sufficient to enforce the number of groups.)
 
   ## identify solver because they use different identifiers for
   ## equality:
@@ -81,7 +90,7 @@ item_assign_ilp <- function(
   n_tris <- choose(n_items, 3) * 3
   ## The number of constraints for constraint (5): The constraint
   ## numbers are taken from Bulhoes et al. 2017 ("Branch-and-price")
-  n_c5 <- sum(!is_in_minority_class)+1 # also use to forbid some items from being leaders
+  n_c5 <- 1 # also use to forbid some items from being leaders
   ## The number of constraints for constraint (6):
   n_c6 <- nrow(costs) ## for each decision var x_ij one constraint
   ## The number of constraints for constraint (7):
@@ -90,8 +99,9 @@ item_assign_ilp <- function(
   n_c8 <- 1
   ## Number of constraints enforcing the size of the groups:
   n_c9 <- n_items ## c9 not part of Bulhoes et al.'s formulation
+  n_c10 <- 1
   ## Total number of constraints:
-  n_constraints <- n_tris + n_c5 + n_c6 + n_c7 + n_c8 + n_c9
+  n_constraints <- n_tris + n_c5 + n_c6 + n_c7 + n_c8 + n_c9 + n_c10
 
   ## Start constructing the matrix representing the left-hand side of
   ## the constraints. Each column is a decision variable, each row is
@@ -101,10 +111,11 @@ item_assign_ilp <- function(
   colnames(constraints) <- c(costs$pair, paste0("y", 1:n_items))
   ## Use row and column names to identify the decision variables and
   ## the constraints. row names: "tc" are triangular constraints.
-    rownames(constraints) <- c(paste0("tc", 1:n_tris), paste0("c5_", 1:n_c5),
-                               paste0("c6_", 1:n_c6),
-                               paste0("c7_", 1:n_c7),
-                               "c8", paste0("c9_", 1:n_c9))
+  rownames(constraints) <- c(
+    paste0("tc", 1:n_tris), "c5",
+    paste0("c6_", 1:n_c6),
+    paste0("c7_", 1:n_c7),
+    "c8", paste0("c9_", 1:n_c9), "c_10")
 
   ## (1) Triangular constraints
 
@@ -134,7 +145,9 @@ item_assign_ilp <- function(
       }
     }
   }
-  constraints <- insert_group_contraints(constraints, n_items, is_in_minority_class)
+  constraints <- insert_group_contraints(constraints, n_items)
+  # last constraint: Number of cluster leaders from minority class
+  constraints[nrow(constraints), ] <- c(rep(0, nrow(costs)), rep(c(1, 0), c(n_leaders_minority, sum(is_in_minority_class)-n_leaders_minority + sum(!is_in_minority_class))))
 
   ## Make the to-be-returned constraint matrix take less storage
   ## as a sparse matrix: (TODO: make it sparse from the beginning)
@@ -146,12 +159,14 @@ item_assign_ilp <- function(
                  rep(lower_sign, n_c6),
                  rep(greater_sign, n_c7),
                  rep(equal_sign, n_c8),
-                 rep(equal_sign, n_c9))
+                 rep(equal_sign, n_c9), equal_sign)
 
-    ## (8) right hand side of the ILP <- many ones
-    rhs <- c(rep(1, nrow(constraints) - 1 - n_c9),
-             p, rep(group_size - 1, n_c9)) #  p = number of clusters || maximum group must not be cluster leader
-    rhs[which(grepl("c5_", rownames(constraints)))[-1]] <- 0 # THESE MUST NOT BE LEADERS! ||| ADJUST HOW MANY! HERE!
+  ## (8) right hand side of the ILP <- many ones
+  rhs <- c(
+    rep(1, nrow(constraints) - 2 - n_c9),
+    p, rep(group_size - 1, n_c9),
+    n_leaders_minority
+  )
 
   ## (9) Construct objective function. Add values for the cluster leader
   ## decision variables to the objective functions. These must be 0
@@ -180,17 +195,10 @@ item_assign_ilp <- function(
 
 ## This function inserts constraints concerned with cluster number and cluster
 ## size
-insert_group_contraints <- function(constraints, n_items, is_in_minority_class) {
+insert_group_contraints <- function(constraints, n_items) {
 
-  first_minority_index <- which(is_in_minority_class)[1]
-
-  ## (2) Constraint (5): define some restrictions on leaderships
-  constraints["c5_1", paste0("y", first_minority_index)] <- 1
-  counter <- 2
-  for (i in which(!is_in_minority_class)) {
-    constraints[paste0("c5_", counter), paste0("y", i)] <- 1
-    counter <- counter + 1
-  }
+  ## (2) Constraint (5): First element is cluster leader
+  constraints["c5", "y1"] <- 1
 
   ## (3) Constraint (6): restrictions on cluster leadership
   ## y_j <= 1 - x_ij <=> y_j + x_ij <= 1

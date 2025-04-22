@@ -26,11 +26,48 @@
 #'
 #' @export
 #'
-item_assignment <- function(distances, n_groups, solver, is_in_minority_class) {
+item_assignment <- function(distances, n_groups, solver, is_in_minority_class, n_leaders_minority) {
+
+  ## 1. "Cleverly" order the data set so that the constraints on item polings are valid
+
+  n <- length(is_in_minority_class)
+  m <- sum(is_in_minority_class)
+  positions_old <- which(is_in_minority_class)
+
+  stopifnot(n_leaders_minority <= p)
+  if (n_leaders_minority > p) { # more potential group leaders than there are groups
+    positions_new <- c(1:n_leaders_minority, (n-(m-n_leaders_minority-1)):n) # the first elements go to the front, the others to the tail
+  } else {
+    positions_new <- 1:sum(is_in_minority_class)
+  }
+
+
+  # reorder input matrix
   distances <- as.matrix(distances)
-  ilp <- item_assign_ilp(distances, n_groups, solver = solver, is_in_minority_class = is_in_minority_class)
+  tmp <- distances[positions_old, positions_old]
+  distances[positions_old, positions_old] <- distances[positions_new, positions_new]
+  distances[positions_new, positions_new] <- tmp
+
+  tmp <- is_in_minority_class[positions_old]
+  is_in_minority_class[positions_old] <- is_in_minority_class[positions_new]
+  is_in_minority_class[positions_new] <- tmp
+
+  ilp <- item_assign_ilp(
+    distances,
+    n_groups,
+    solver = solver,
+    is_in_minority_class = is_in_minority_class,
+    n_leaders_minority =
+      n_leaders_minority
+  )
   solution <- solve_ilp(ilp, solver)
-  ilp_to_groups(ilp, solution)
+  print(solution$x[grepl("y", colnames(ilp$constraints))])
+  groups <- ilp_to_groups(ilp, solution)
+
+  tmp <- groups[positions_old]
+  groups[positions_old] <- groups[positions_new]
+  groups[positions_new] <- tmp
+  groups
 }
 
 #' Solve the ILP formulation of the item assignment problem
