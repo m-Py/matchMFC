@@ -33,8 +33,8 @@ item_assignment <- function(distances, n_groups, solver, is_in_minority_class, n
   m <- sum(is_in_minority_class)
   positions_old <- which(is_in_minority_class)
 
-  stopifnot(n_leaders_minority <= p)
-  if (n_leaders_minority > p) { # more potential group leaders than there are groups
+  stopifnot(n_leaders_minority <= n_groups)
+  if (n_leaders_minority > n_groups) { # more potential group leaders than there are groups
     positions_new <- c(1:n_leaders_minority, (n-(m-n_leaders_minority-1)):n) # the first elements go to the front, the others to the tail
   } else {
     positions_new <- 1:sum(is_in_minority_class)
