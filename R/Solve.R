@@ -5,7 +5,7 @@
 #'     items and columns to features.
 #' @param n_groups How many groups are to be created.
 #' @param solver A string identifing the solver to be used ("Rglpk",
-#'   "gurobi", or "cplex")
+#'   "gurobi")
 #' @param standardize Boolean - should the feature values be
 #'     standardized before groups are created? Defaults to FALSE.
 #' @param heuristic Set the level of "heuristicism" by setting a numeric
@@ -82,7 +82,7 @@ item_assignment <- function(distances, n_groups, solver, is_in_minority_class, n
 #' @param ilp An object representing the ILP formulation of the
 #'     instance, returned by `item_assign_ilp`
 #' @param solver A string identifing the solver to be used ("Rglpk",
-#'   "gurobi", or "cplex")
+#'   "gurobi")
 #' @param objective A string identifying whether the objective function
 #'     of the ILP should be maximized ("max") or minimized
 #'     ("min"). Maximizing creates similar groups (i.e., solves item
@@ -129,16 +129,6 @@ solve_ilp <- function(ilp, solver, objective = "min") {
     ilp_solution <- gurobi::gurobi(model)
     ret_list$x <- ilp_solution$x
     ret_list$obj <- ilp_solution$objval
-  } else if (solver == "cplex") {
-    ilp_solution <- Rcplex::Rcplex(cvec = ilp$obj_function,
-                        Amat = ilp$constraints,
-                        bvec = ilp$rhs,
-                        objsense = objective,
-                        sense = ilp$equalities,
-                        vtype = "I",
-                        control = list(round = 1)) # important to obtain integers
-    ret_list$x <- ilp_solution$xopt
-    ret_list$obj <- ilp_solution$obj
   }
   ## name the decision variables
   names(ret_list$x) <- colnames(ilp$constraints)

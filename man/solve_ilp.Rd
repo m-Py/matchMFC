@@ -11,7 +11,7 @@ solve_ilp(ilp, solver, objective = "min")
 instance, returned by `item_assign_ilp`}
 
 \item{solver}{A string identifing the solver to be used ("Rglpk",
-"gurobi", or "cplex")}
+"gurobi")}
 
 \item{objective}{A string identifying whether the objective function
 of the ILP should be maximized ("max") or minimized

@@ -16,7 +16,7 @@ item_assignment(
 \item{n_groups}{How many groups are to be created.}
 
 \item{solver}{A string identifing the solver to be used ("Rglpk",
-"gurobi", or "cplex")}
+"gurobi")}
 
 \item{items}{A data.frame of item features. Rows must correspond to
 items and columns to features.}

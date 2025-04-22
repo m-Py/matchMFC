@@ -19,13 +19,11 @@ distances between items}
 \item{p}{The number of groups to be created}
 
 \item{solver}{A string identifing the solver to be used ("Rglpk",
-"gurobi", or "cplex")}
+"gurobi")}
 
-\item{positives}{Logical: Is each item positively coded?}
+\item{is_in_minority_class}{Logical: Is item negatively coded?}
 
-\item{max_only_positives}{how many clusters should maximally have more}
-
-\item{max_only_negatives}{how many clusters should maximally have more}
+\item{n_leaders_minority}{numbers of negatively items that should be cluster leaders}
 }
 \value{
 A list representing ILP formulation of the instance

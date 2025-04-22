@@ -5,10 +5,9 @@
 #'   distances between items
 #' @param p The number of groups to be created
 #' @param solver A string identifing the solver to be used ("Rglpk",
-#'   "gurobi", or "cplex")
-#' @param positives Logical: Is each item positively coded?
-#' @param max_only_positives how many clusters should maximally have more
-#' @param max_only_negatives how many clusters should maximally have more
+#'   "gurobi")
+#' @param is_in_minority_class Logical: Is item negatively coded?
+#' @param n_leaders_minority numbers of negatively items that should be cluster leaders
 #'
 #' @return A list representing ILP formulation of the instance
 #'
@@ -55,12 +54,8 @@ item_assign_ilp <- function(
     equal_sign <- "="
     lower_sign <- "<="
     greater_sign <- ">="
-  } else if (solver == "cplex") {
-    equal_sign <- "E"
-    lower_sign <- "L"
-    greater_sign <- "G"
   } else {
-    stop("solver must be 'cplex', 'Rglpk', or 'gurobi'")
+    stop("solver must be 'Rglpk', or 'gurobi'")
   }
 
   ## Problem: I have matrix of costs but need vector for ILP
