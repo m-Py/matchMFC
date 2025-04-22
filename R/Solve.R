@@ -33,12 +33,16 @@ item_assignment <- function(distances, n_groups, solver, is_in_minority_class, n
   m <- sum(is_in_minority_class)
   positions_old <- which(is_in_minority_class)
 
+
+  ## THIS DOES NOT WORK AS INTENDED
   stopifnot(n_leaders_minority <= n_groups)
   if (n_leaders_minority > n_groups) { # more potential group leaders than there are groups
     positions_new <- c(1:n_leaders_minority, (n-(m-n_leaders_minority-1)):n) # the first elements go to the front, the others to the tail
   } else {
-    positions_new <- 1:sum(is_in_minority_class)
+    positions_new <- 1:n_leaders_minority
   }
+
+  print(positions_new)
 
 
   # reorder input matrix
@@ -53,6 +57,7 @@ item_assignment <- function(distances, n_groups, solver, is_in_minority_class, n
 
 
   ## 2. Generate ILP model based on reordered data
+  cat("Creating model...\n")
   ilp <- item_assign_ilp(
     distances,
     n_groups,
@@ -60,11 +65,15 @@ item_assignment <- function(distances, n_groups, solver, is_in_minority_class, n
     is_in_minority_class = is_in_minority_class,
     n_leaders_minority = n_leaders_minority
   )
+  cat("Model done!\n")
 
   # 3. Solve model
-
+  cat("Starting solving...\n")
   solution <- solve_ilp(ilp, solver)
+  print(solution$x)
   groups <- ilp_to_groups(ilp, solution)
+
+  cat("Solved\n")
 
   # 4. Restore original order before returning solution
   tmp <- groups[positions_old]
