@@ -1,5 +1,5 @@
 
-#' Solve an instance of item assignment
+#' Solve an instance of MFC item assignment
 #'
 #' @param items A data.frame of item features. Rows must correspond to
 #'     items and columns to features.
@@ -29,7 +29,6 @@
 item_assignment <- function(distances, n_groups, solver, is_in_minority_class, n_leaders_minority) {
 
   ## 1. "Cleverly" order the data set so that the constraints on item polings are valid
-
   n <- length(is_in_minority_class)
   m <- sum(is_in_minority_class)
   positions_old <- which(is_in_minority_class)
@@ -52,18 +51,22 @@ item_assignment <- function(distances, n_groups, solver, is_in_minority_class, n
   is_in_minority_class[positions_old] <- is_in_minority_class[positions_new]
   is_in_minority_class[positions_new] <- tmp
 
+
+  ## 2. Generate ILP model based on reordered data
   ilp <- item_assign_ilp(
     distances,
     n_groups,
     solver = solver,
     is_in_minority_class = is_in_minority_class,
-    n_leaders_minority =
-      n_leaders_minority
+    n_leaders_minority = n_leaders_minority
   )
+
+  # 3. Solve model
+
   solution <- solve_ilp(ilp, solver)
-  print(solution$x[grepl("y", colnames(ilp$constraints))])
   groups <- ilp_to_groups(ilp, solution)
 
+  # 4. Restore original order before returning solution
   tmp <- groups[positions_old]
   groups[positions_old] <- groups[positions_new]
   groups[positions_new] <- tmp
