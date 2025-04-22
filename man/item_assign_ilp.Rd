@@ -2,9 +2,15 @@
 % Please edit documentation in R/ILP.R
 \name{item_assign_ilp}
 \alias{item_assign_ilp}
-\title{Construct the ILP represenation of an item assignment problem}
+\title{Construct the ILP represenation of an MFC item assignment problem}
 \usage{
-item_assign_ilp(distances, p, solver = "Rglpk")
+item_assign_ilp(
+  distances,
+  p,
+  solver = "Rglpk",
+  is_in_minority_class = NULL,
+  n_leaders_minority = NULL
+)
 }
 \arguments{
 \item{distances}{An distance object or matrix representing the
@@ -14,12 +20,18 @@ distances between items}
 
 \item{solver}{A string identifing the solver to be used ("Rglpk",
 "gurobi", or "cplex")}
+
+\item{positives}{Logical: Is each item positively coded?}
+
+\item{max_only_positives}{how many clusters should maximally have more}
+
+\item{max_only_negatives}{how many clusters should maximally have more}
 }
 \value{
 A list representing ILP formulation of the instance
 }
 \description{
-Construct the ILP represenation of an item assignment problem
+Construct the ILP represenation of an MFC item assignment problem
 }
 \references{
 T. Bulhões, G. F. de Sousa Filho, A. Subramanian, and F. C. Lucídio
@@ -29,4 +41,10 @@ Discrete Applied Mathematics, vol. 219, pp. 51–64, 2017.
 T. Bulhões, A. Subramanian, G. F. Sousa Filho, and F. C. Lucídio dos
 Anjos, “Branch-and-price for p-cluster editing,” Computational
 Optimization and Applications, vol. 67, no. 2, pp. 293–316, 2017.
+
+Grötschel, M., & Wakabayashi, Y. (1989). A cutting plane algorithm for a clustering problem.
+Mathematical Programming, 45, 59-96.
+
+Papenberg, M., & Klau, G. W. (2021). Using anticlustering to partition data sets into equivalent parts.
+Psychological Methods, 26(2), 161--174. https://doi.org/10.1037/met0000301
 }

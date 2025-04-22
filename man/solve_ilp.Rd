@@ -4,7 +4,7 @@
 \alias{solve_ilp}
 \title{Solve the ILP formulation of the item assignment problem}
 \usage{
-solve_ilp(ilp, solver, objective = "max")
+solve_ilp(ilp, solver, objective = "min")
 }
 \arguments{
 \item{ilp}{An object representing the ILP formulation of the

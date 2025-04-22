@@ -5,7 +5,7 @@
 \title{Return group membership based on ILP solution for an item assignment
 instance}
 \usage{
-ilp_to_groups(ilp, solution, items)
+ilp_to_groups(ilp, solution)
 }
 \arguments{
 \item{ilp}{An ILP representation of the item assignment problem

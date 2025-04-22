@@ -2,18 +2,24 @@
 % Please edit documentation in R/Solve.R
 \name{item_assignment}
 \alias{item_assignment}
-\title{Solve an instance of item assignment}
+\title{Solve an instance of MFC item assignment}
 \usage{
-item_assignment(items, n_groups, solver, standardize = FALSE, heuristic = 2)
+item_assignment(
+  distances,
+  n_groups,
+  solver,
+  is_in_minority_class,
+  n_leaders_minority
+)
 }
 \arguments{
-\item{items}{A data.frame of item features. Rows must correspond to
-items and columns to features.}
-
 \item{n_groups}{How many groups are to be created.}
 
 \item{solver}{A string identifing the solver to be used ("Rglpk",
 "gurobi", or "cplex")}
+
+\item{items}{A data.frame of item features. Rows must correspond to
+items and columns to features.}
 
 \item{standardize}{Boolean - should the feature values be
 standardized before groups are created? Defaults to FALSE.}
@@ -36,5 +42,5 @@ A data.frame containing one column of item ids (here, the id
     returned as columns of the data.frame.
 }
 \description{
-Solve an instance of item assignment
+Solve an instance of MFC item assignment
 }
