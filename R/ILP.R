@@ -33,7 +33,7 @@
 #'
 
 item_assign_ilp <- function(
-    distances, p, solver = "Rglpk", is_in_minority_class=NULL, n_leaders_minority=NULL) {
+    distances, p, solver = "glpk", is_in_minority_class=NULL, n_leaders_minority=NULL) {
 
   ## This ILP is a mixture of several formulations from the literature, plus an
   ## additional novel constraint that enforces the number of groups that have negatively coded items.
@@ -44,22 +44,11 @@ item_assign_ilp <- function(
   #    coded items. (These additional decision variables are the primary reason why b. is used; actually, c. is already
   #    sufficient to enforce the number of groups.)
 
-  ## identify solver because they use different identifiers for
-  ## equality:
-  if (solver == "Rglpk") {
-    equal_sign <- "=="
-    lower_sign <- "<="
-    greater_sign <- ">="
-  } else if (solver == "gurobi") {
-    equal_sign <- "="
-    lower_sign <- "<="
-    greater_sign <- ">="
-  } else {
-    stop("solver must be 'Rglpk', or 'gurobi'")
-  }
+  equal_sign <- "=="
+  lower_sign <- "<="
+  greater_sign <- ">="
 
-  ## Problem: I have matrix of costs but need vector for ILP
-  ## formulation.
+  ## Problem: I have matrix of costs but need vector for ILP formulation.
   costs_m <- as.matrix(distances)
   n_items <-  nrow(costs_m)
   group_size = n_items / p
@@ -67,9 +56,6 @@ item_assign_ilp <- function(
   costs <- expand.grid(1:ncol(costs_m), 1:nrow(costs_m))
   colnames(costs) <- c("i", "j")
   costs$costs <- c(costs_m)
-  ## TODO: add "_" to the names, i.e. xi_j, to avoid ambiguity when we
-  ## have more than 100 items (which cannot be solved exactly
-  ## probably, but we should have the option)
   costs$pair <- paste0("x", paste0(costs$i, "_", costs$j, "_"))
   ## remove all cases where j >= i, i.e. remove redundant or self distances
   costs <- subset(costs, i < j)

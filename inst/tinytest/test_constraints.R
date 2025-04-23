@@ -19,7 +19,7 @@ distances <- as.matrix(distances)
 
 uu <- item_assignment(
   distances, p = p,
-  solver = "Rglpk",
+  solver = "glpk",
   positives = positives,
   n_leaders_minority = 3
 )
@@ -56,7 +56,7 @@ n_leaders_minority <- min(sum(!positives), p)
 
 uu <- item_assignment(
   distances, p = p,
-  solver = "Rglpk",
+  solver = "glpk",
   positives = positives,
   n_leaders_minority = n_leaders_minority
 )
@@ -70,7 +70,7 @@ expect_true(all(falses) > 0)
 ## there cannot be more cluster leaders than there are groups
 expect_error(item_assignment(
   distances, n_groups = p,
-  solver = "Rglpk",
+  solver = "glpk",
   is_in_minority_class = !positives,
   n_leaders_minority = n_leaders_minority +1
 ))
@@ -96,7 +96,7 @@ n_leaders_minority <- 3
 
 uu <- item_assignment(
   distances, p = p,
-  solver = "Rglpk",
+  solver = "glpk",
   positives = positives,
   n_leaders_minority = n_leaders_minority
 )
@@ -146,7 +146,7 @@ n_leaders_minority <- min(p, sum(!positives))
 
 start <- Sys.time()
 my_triplets_opt2 <- item_assignment(
-  distances, p = p, solver = "Rglpk", positives = positives, n_leaders_minority = n_leaders_minority
+  distances, p = p, solver = "glpk", positives = positives, n_leaders_minority = n_leaders_minority
 )
 Sys.time() - start # sometimes 7s for tiny instance =( (using GLPK though)
 

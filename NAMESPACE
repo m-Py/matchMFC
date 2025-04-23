@@ -2,5 +2,4 @@
 
 export(item_assign_ilp)
 export(item_assignment)
-export(solve_ilp)
 importFrom(Matrix,Matrix)

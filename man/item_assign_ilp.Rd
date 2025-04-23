@@ -7,7 +7,7 @@
 item_assign_ilp(
   distances,
   p,
-  solver = "Rglpk",
+  solver = "glpk",
   is_in_minority_class = NULL,
   n_leaders_minority = NULL
 )

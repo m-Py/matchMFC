@@ -4,7 +4,15 @@
 \alias{item_assignment}
 \title{Solve an instance of MFC item assignment}
 \usage{
-item_assignment(distances, p, solver, positives, n_leaders_minority)
+item_assignment(
+  distances,
+  p,
+  solver,
+  positives,
+  n_leaders_minority,
+  objective = "min",
+  time_limit = NULL
+)
 }
 \arguments{
 \item{p}{How many groups are to be created.}
