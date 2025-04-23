@@ -155,3 +155,12 @@ expect_true(group_size_constraints_met(my_triplets_opt2))
 table(my_triplets_opt2)
 table(my_triplets_opt2, positives)
 
+start <- Sys.time()
+my_triplets_opt3 <- item_assignment(
+  distances, p = p, solver = "glpk", positives = positives, n_leaders_minority = n_leaders_minority, time_limit = 1
+)
+Sys.time() - start # sometimes 7s for tiny instance =( (using GLPK though)
+
+expect_true(group_size_constraints_met(my_triplets_opt3)) ### THIS TEST CAN FAIL BECAUSE I DO NOT TEST IF SOLUTION IS FEASIBLE!!!!!!
+anticlust::diversity_objective(distances, my_triplets_opt2) # same!
+anticlust::diversity_objective(distances, my_triplets_opt3) # same!
