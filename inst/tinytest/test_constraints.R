@@ -32,6 +32,7 @@ group_size_constraints_met <- function(x) {
 
  # group_size constraints are met
 expect_true(group_size_constraints_met(uu))
+expect_true(length(table(uu)) == p)
 table(uu, positives)
 expect_true(colSums(table(uu, positives))[1] == 3)
 
@@ -62,6 +63,7 @@ uu <- item_assignment(
 
 # verify that there are negatively poled items are in all groups
 expect_true(group_size_constraints_met(uu))
+expect_true(length(table(uu)) == p)
 falses <- table(uu, positives)[,1]
 expect_true(all(falses) > 0)
 
@@ -74,7 +76,8 @@ expect_error(item_assignment(
 ))
 
 
-## PROBLEMATIC?! MANY NEGATIVELY POLED ITEMS, FEWER CLUSTER LEADERS THAN GROUPS
+## PROBLEMATIC?! MORE NEGATIVELY POLED ITEMS THAN CLUSTERS; BUT NOT ALL NEGATIVELY POLED ITEMS MAY BE IN DIFFERENT CLUSTERS!
+# WORKS NOW!
 
 N <- 20
 
@@ -97,7 +100,7 @@ uu <- item_assignment(
   positives = positives,
   n_leaders_minority = n_leaders_minority
 )
-table(uu, positives) ## does not work, and I'm not sure it can work with this model...
+table(uu, positives) ## WORKS!!!!
 
 falses <- table(uu, positives)[,1]
 expect_true(sum(falses != 0) == n_leaders_minority)
@@ -145,7 +148,7 @@ start <- Sys.time()
 my_triplets_opt2 <- item_assignment(
   distances, p = p, solver = "Rglpk", positives = positives, n_leaders_minority = n_leaders_minority
 )
-Sys.time() - start
+Sys.time() - start # sometimes 7s for tiny instance =( (using GLPK though)
 
 expect_true(group_size_constraints_met(my_triplets_opt2))
 
