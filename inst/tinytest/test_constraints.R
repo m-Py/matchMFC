@@ -80,7 +80,7 @@ N <- 20
 
 distances <- as.matrix(dist(rnorm(N)))
 
-skew <- 1
+skew <- 3
 
 positives <- rep(c(TRUE, FALSE), c(N/2 + skew, N/2 - skew))
 is_in_minority_class <- !positives
@@ -89,7 +89,7 @@ sum(!positives)
 
 p <- 4
 
-n_leaders_minority <- 2
+n_leaders_minority <- 3
 
 uu <- item_assignment(
   distances, p = p,
@@ -98,6 +98,9 @@ uu <- item_assignment(
   n_leaders_minority = n_leaders_minority
 )
 table(uu, positives) ## does not work, and I'm not sure it can work with this model...
+
+falses <- table(uu, positives)[,1]
+expect_true(sum(falses != 0) == n_leaders_minority)
 
 ### Pathological case that NOT LONGER FAILS
 
