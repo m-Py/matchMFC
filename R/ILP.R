@@ -94,9 +94,20 @@ item_assign_ilp <- function(
   n_c8 <- 1
   ## Number of constraints enforcing the size of the groups:
   n_c9 <- n_items ## c9 not part of Bulhoes et al.'s formulation
-  n_c10 <- 1
+  n_c10 <- 1 # one constraint that ensures that negatively poled items are leaders
+
+  m <- sum(is_in_minority_class)
+  if (m > p && n_leaders_minority < p) {
+    n_c11 <- m # additional constraint that ensure valid results when n_leaders_minority < p
+    need_additional_constraints <- TRUE
+  } else {
+    n_c11 <- 0
+    need_additional_constraints <- FALSE
+  }
+
+
   ## Total number of constraints:
-  n_constraints <- n_tris + n_c5 + n_c6 + n_c7 + n_c8 + n_c9 + n_c10
+  n_constraints <- n_tris + n_c5 + n_c6 + n_c7 + n_c8 + n_c9 + n_c10 + n_c11
 
   ## Start constructing the matrix representing the left-hand side of
   ## the constraints. Each column is a decision variable, each row is
@@ -106,11 +117,18 @@ item_assign_ilp <- function(
   colnames(constraints) <- c(costs$pair, paste0("y", 1:n_items))
   ## Use row and column names to identify the decision variables and
   ## the constraints. row names: "tc" are triangular constraints.
-  rownames(constraints) <- c(
+  constraint_names <- c(
     paste0("tc", 1:n_tris), "c5",
     paste0("c6_", 1:n_c6),
     paste0("c7_", 1:n_c7),
-    "c8", paste0("c9_", 1:n_c9), "c_10")
+    "c8", paste0("c9_", 1:n_c9),
+    "c_10"
+  )
+  if (need_additional_constraints) {
+    constraint_names <- c(constraint_names, paste0("c11_", 1:n_c11))
+  }
+
+  rownames(constraints) <- constraint_names
 
   ## (1) Triangular constraints
 
@@ -144,25 +162,45 @@ item_assign_ilp <- function(
   # last constraint: Number of cluster leaders from minority class
   constraints["c_10", ] <- c(rep(0, nrow(costs)), rep(c(1, 0), c(sum(is_in_minority_class), sum(!is_in_minority_class))))
 
+  # last (?) set of constraints: ensure that each negative item is either cluster leader
+  # or connected to other negative item (that is cluster leader)
+  if (need_additional_constraints) {
+    cn <- colnames(constraints)
+    for (i in 1:n_c11) {
+      nn <- grep(paste0("x", i, "_|_", i, "_"), cn, value = TRUE)
+      nn <- grep(paste(m+c(1:(n-m)), collapse = "|"), nn, value = TRUE, invert = TRUE)
+      constraints[paste0("c11_", i), nn] <- 1
+      constraints[paste0("c11_", i), paste0("y", i)] <- 1
+    }
+  }
+
+
   ## Make the to-be-returned constraint matrix take less storage
   ## as a sparse matrix: (TODO: make it sparse from the beginning)
   constraints <- Matrix::Matrix(constraints, sparse = TRUE)
 
   ## (7) Insert the direction of the constraints:
-  equalities = c(rep(lower_sign, n_tris),
-                 rep(equal_sign, n_c5),
-                 rep(lower_sign, n_c6),
-                 rep(greater_sign, n_c7),
-                 rep(equal_sign, n_c8),
-                 rep(equal_sign, n_c9), equal_sign)
+  equalities = c(
+    rep(lower_sign, n_tris),
+    rep(equal_sign, n_c5),
+    rep(lower_sign, n_c6),
+    rep(greater_sign, n_c7),
+    rep(equal_sign, n_c8),
+    rep(equal_sign, n_c9),
+    equal_sign,
+    rep(greater_sign, n_c11) # n_c11 can be zero
+  )
 
   ## (8) right hand side of the ILP <- many ones
   rhs <- c(
-    rep(1, nrow(constraints) - 2 - n_c9),
-    p, rep(group_size - 1, n_c9),
-    n_leaders_minority
+    rep(1, n_tris + n_c5 + n_c6 + n_c7),
+    p,
+    rep(group_size - 1, n_c9),
+    n_leaders_minority,
+    rep(1, n_c11) # n_c11 can be zero
   )
 
+  stopifnot(length(rhs) == length(equalities) && length(rhs) == nrow(constraints))
   ## (9) Construct objective function. Add values for the cluster leader
   ## decision variables to the objective functions. These must be 0
   ## because they are not part of the objective function, but they are
