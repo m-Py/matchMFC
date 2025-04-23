@@ -4,36 +4,20 @@
 \alias{item_assignment}
 \title{Solve an instance of MFC item assignment}
 \usage{
-item_assignment(
-  distances,
-  n_groups,
-  solver,
-  is_in_minority_class,
-  n_leaders_minority
-)
+item_assignment(distances, p, solver, positives, n_leaders_minority)
 }
 \arguments{
-\item{n_groups}{How many groups are to be created.}
+\item{p}{How many groups are to be created.}
 
 \item{solver}{A string identifing the solver to be used ("Rglpk",
 "gurobi")}
 
+\item{positives}{logical - is item positively coded.}
+
+\item{n_leaders_minority}{Scalar number -}
+
 \item{items}{A data.frame of item features. Rows must correspond to
 items and columns to features.}
-
-\item{standardize}{Boolean - should the feature values be
-standardized before groups are created? Defaults to FALSE.}
-
-\item{heuristic}{Set the level of "heuristicism" by setting a numeric
-value of 0 to 3. Set to 0 to obtain the exact solution for the item
-assignment instance. Levels 1 to 3 will in a first step identify
-very similar items and then ensure that these will be assigned to
-different groups. Level 1 does this preclustering using exact
-cluster editing; Level 2 does this preclustering using a heuristic
-based on k-means clustering. On Level 3, preclustering is also done
-using the heuristic based on k-means clustering, and the final
-assignment is no longer done using exact ILP item assignment, but
-instead using a simple random assignment.}
 }
 \value{
 A data.frame containing one column of item ids (here, the id
