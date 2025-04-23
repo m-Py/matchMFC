@@ -53,7 +53,6 @@ item_assignment <- function(distances, p, solver, positives, n_leaders_minority)
   # 3. Solve model
   cat("Starting solving...\n")
   solution <- solve_ilp(ilp, solver)
-  print(solution$x)
 
   orderings$groups <- ilp_to_groups(solution, n)
   orderings$groups[order(orderings$original_order)]
