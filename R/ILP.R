@@ -70,7 +70,7 @@ item_assign_ilp <- function(
   ## TODO: add "_" to the names, i.e. xi_j, to avoid ambiguity when we
   ## have more than 100 items (which cannot be solved exactly
   ## probably, but we should have the option)
-  costs$pair <- paste0("x", paste0(costs$i, "_", costs$j))
+  costs$pair <- paste0("x", paste0(costs$i, "_", costs$j, "_"))
   ## remove all cases where j >= i, i.e. remove redundant or self distances
   costs <- subset(costs, i < j)
   rownames(costs) <- NULL
@@ -123,18 +123,18 @@ item_assign_ilp <- function(
         ## offset for addressing the data.frame:
         offset <- (counter - 1) * 3
         ## triangular constraint 1
-        constraints[offset + 1, paste0("x", i, "_", j)] <- -1
-        constraints[offset + 1, paste0("x", i, "_", k)] <- 1
-        constraints[offset + 1, paste0("x", j, "_", k)] <- 1
+        constraints[offset + 1, paste0("x", i, "_", j, "_")] <- -1
+        constraints[offset + 1, paste0("x", i, "_", k, "_")] <- 1
+        constraints[offset + 1, paste0("x", j, "_", k, "_")] <- 1
         constraints[offset + 1, paste0("y", k)] <- 1
         ## triangular constraint 2
-        constraints[offset + 2, paste0("x", i, "_", j)] <- 1
-        constraints[offset + 2, paste0("x", i, "_", k)] <- -1
-        constraints[offset + 2, paste0("x", j, "_", k)] <- 1
+        constraints[offset + 2, paste0("x", i, "_", j, "_")] <- 1
+        constraints[offset + 2, paste0("x", i, "_", k, "_")] <- -1
+        constraints[offset + 2, paste0("x", j, "_", k, "_")] <- 1
         ## triangular constraint 3
-        constraints[offset + 3, paste0("x", i, "_", j)] <- 1
-        constraints[offset + 3, paste0("x", i, "_", k)] <- 1
-        constraints[offset + 3, paste0("x", j, "_", k)] <- -1
+        constraints[offset + 3, paste0("x", i, "_", j, "_")] <- 1
+        constraints[offset + 3, paste0("x", i, "_", k, "_")] <- 1
+        constraints[offset + 3, paste0("x", j, "_", k, "_")] <- -1
         ## increase counter
         counter <- counter + 1
       }
@@ -202,7 +202,7 @@ insert_group_contraints <- function(constraints, n_items) {
   for (i in 1:n_items) {
     for (j in 2:n_items) {
       if (i >= j) next
-      constraints[paste0("c6_", counter), paste0("x", i, "_", j)] <- 1
+      constraints[paste0("c6_", counter), paste0("x", i, "_", j, "_")] <- 1
       constraints[paste0("c6_", counter), paste0("y", j)] <- 1
       counter <- counter + 1
     }
@@ -215,7 +215,7 @@ insert_group_contraints <- function(constraints, n_items) {
     constraints[paste0("c7_", counter), paste0("y", j)] <- 1
     for (i in 1:n_items) {
       if (i >= j) next
-      constraints[paste0("c7_", counter), paste0("x", i, "_", j)] <- 1
+      constraints[paste0("c7_", counter), paste0("x", i, "_", j, "_")] <- 1
     }
     counter <- counter + 1
   }
@@ -230,9 +230,9 @@ insert_group_contraints <- function(constraints, n_items) {
     for (j in 1:n_items) {
       ## mark all edges that i is part of (i may be lower or higher index!)
       if (i < j)
-        constraints[paste0("c9_", i), paste0("x", i, "_", j)] <- 1
+        constraints[paste0("c9_", i), paste0("x", i, "_", j, "_")] <- 1
       if (j < i)
-        constraints[paste0("c9_", i), paste0("x", j, "_", i)] <- 1
+        constraints[paste0("c9_", i), paste0("x", j, "_", i, "_")] <- 1
     }
   }
   return(constraints)
