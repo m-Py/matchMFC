@@ -168,7 +168,7 @@ item_assign_ilp <- function(
     cn <- colnames(constraints)
     for (i in 1:n_c11) {
       nn <- grep(paste0("x", i, "_|_", i, "_"), cn, value = TRUE)
-      nn <- grep(paste(m+c(1:(n-m)), collapse = "|"), nn, value = TRUE, invert = TRUE)
+      nn <- grep(paste(m+c(1:(n_items-m)), collapse = "|"), nn, value = TRUE, invert = TRUE)
       constraints[paste0("c11_", i), nn] <- 1
       constraints[paste0("c11_", i), paste0("y", i)] <- 1
     }
