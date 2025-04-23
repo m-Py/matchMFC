@@ -142,7 +142,7 @@ item_assign_ilp <- function(
   }
   constraints <- insert_group_contraints(constraints, n_items)
   # last constraint: Number of cluster leaders from minority class
-  constraints[nrow(constraints), ] <- c(rep(0, nrow(costs)), rep(c(1, 0), c(n_leaders_minority, sum(is_in_minority_class)-n_leaders_minority + sum(!is_in_minority_class))))
+  constraints["c_10", ] <- c(rep(0, nrow(costs)), rep(c(1, 0), c(sum(is_in_minority_class), sum(!is_in_minority_class))))
 
   ## Make the to-be-returned constraint matrix take less storage
   ## as a sparse matrix: (TODO: make it sparse from the beginning)
