@@ -164,3 +164,49 @@ Sys.time() - start # sometimes 7s for tiny instance =( (using GLPK though)
 expect_true(group_size_constraints_met(my_triplets_opt3)) ### THIS TEST CAN FAIL BECAUSE I DO NOT TEST IF SOLUTION IS FEASIBLE!!!!!!
 anticlust::diversity_objective(distances, my_triplets_opt2) # same!
 anticlust::diversity_objective(distances, my_triplets_opt3) # same!
+
+
+## This instance currently does not balance the positive items across clusters:
+dput(distances)
+distances <- structure(c(0, 1, 314, 314, 1, 0, 314, 1, 1, 0, 314, 0, 2, 1,
+2, 1, 0, 2, 1, 0, 1, 2, 2, 314, 1, 2, 2, 314, 1, 1, 3, 314, 3,
+2, 1, 3, 314, 1, 314, 314, 1, 0, 314, 1, 1, 0, 314, 0, 2, 1,
+2, 1, 0, 2, 314, 2, 314, 314, 0, 1, 314, 0, 0, 1, 314, 1, 1,
+2, 1, 0, 1, 1, 1, 2, 1, 0, 0, 1, 1, 314, 314, 1, 1, 1, 314, 2,
+1, 0, 314, 314, 0, 314, 0, 1, 1, 314, 0, 1, 1, 314, 0, 0, 2,
+314, 2, 1, 0, 2, 314, 1, 314, 314, 1, 0, 314, 1, 1, 0, 314, 0,
+2, 1, 2, 1, 0, 2, 1, 2, 1, 0, 314, 1, 1, 314, 314, 1, 1, 1, 314,
+2, 1, 0, 314, 314, 1, 2, 1, 0, 314, 1, 1, 314, 314, 1, 1, 1,
+314, 2, 1, 0, 314, 314, 0, 314, 0, 1, 1, 314, 0, 1, 1, 314, 0,
+0, 2, 314, 2, 1, 0, 2, 314, 1, 314, 314, 1, 0, 314, 1, 1, 0,
+0, 0, 2, 1, 2, 1, 0, 2, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 2,
+1, 2, 314, 0, 2, 2, 3, 2, 1, 314, 2, 2, 314, 314, 2, 2, 2, 314,
+3, 0, 1, 314, 314, 1, 314, 1, 2, 2, 314, 1, 2, 2, 314, 1, 1,
+3, 0, 3, 2, 1, 3, 2, 3, 2, 1, 1, 2, 2, 1, 1, 2, 2, 2, 0, 3, 314,
+1, 2, 0, 1, 2, 1, 0, 0, 1, 1, 0, 0, 1, 1, 314, 1, 2, 1, 0, 1,
+1, 0, 1, 0, 1, 314, 0, 0, 314, 314, 0, 0, 0, 314, 1, 2, 1, 314,
+314, 2, 3, 2, 1, 314, 2, 2, 314, 314, 2, 2, 2, 314, 3, 0, 1,
+314, 0), dim = c(18L, 18L), dimnames = list(c("1", "2", "3",
+"4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15",
+"16", "17", "18"), c("1", "2", "3", "4", "5", "6", "7", "8",
+"9", "10", "11", "12", "13", "14", "15", "16", "17", "18")))
+positives <- c(0, 1, 0, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 1, 0)
+
+n <- nrow(distances)
+p <- n / 3
+n_leaders_minority <- min(p, sum(!positives))
+
+start <- Sys.time()
+uu <- item_assignment(
+  distances, p = p, solver = "glpk", positives = as.logical(positives), n_leaders_minority = n_leaders_minority, time_limit = 30
+)
+Sys.time() - start
+
+expect_true(group_size_constraints_met(uu))
+expect_true(length(table(uu)) == p)
+falses <- table(uu, positives)[,1]
+expect_true(all(falses) > 0)
+trues <- table(uu, positives)[,2]
+expect_true(all(trues) > 0) ## FAILS - positive items not evenly distributed!
+
+
