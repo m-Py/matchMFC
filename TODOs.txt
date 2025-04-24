@@ -1,0 +1,4 @@
+
+- Add interface function
+  * internally handles recoding the distance matrix
+  * how to ask for maximization (for interrater agreements) vs minimization (for average SD)?
