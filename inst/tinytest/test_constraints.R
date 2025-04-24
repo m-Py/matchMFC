@@ -67,6 +67,9 @@ expect_true(length(table(uu)) == p)
 falses <- table(uu, positives)[,1]
 expect_true(all(falses) > 0)
 
+trues <- table(uu, positives)[,2] # this is enforced (should be?) with constraint 12
+expect_true(all(trues) > 0)
+
 ## there cannot be more cluster leaders than there are groups
 expect_error(item_assignment(
   distances, n_groups = p,
@@ -148,7 +151,7 @@ start <- Sys.time()
 my_triplets_opt2 <- item_assignment(
   distances, p = p, solver = "glpk", positives = positives, n_leaders_minority = n_leaders_minority
 )
-Sys.time() - start # sometimes 7s for tiny instance =( (using GLPK though)
+Sys.time() - start # 7s for tiny instance =( (using GLPK though)
 
 expect_true(group_size_constraints_met(my_triplets_opt2))
 
@@ -159,7 +162,7 @@ start <- Sys.time()
 my_triplets_opt3 <- item_assignment(
   distances, p = p, solver = "glpk", positives = positives, n_leaders_minority = n_leaders_minority, time_limit = 1
 )
-Sys.time() - start # sometimes 7s for tiny instance =( (using GLPK though)
+Sys.time() - start
 
 expect_true(group_size_constraints_met(my_triplets_opt3)) ### THIS TEST CAN FAIL BECAUSE I DO NOT TEST IF SOLUTION IS FEASIBLE!!!!!!
 anticlust::diversity_objective(distances, my_triplets_opt2) # same!
@@ -207,6 +210,5 @@ expect_true(length(table(uu)) == p)
 falses <- table(uu, positives)[,1]
 expect_true(all(falses) > 0)
 trues <- table(uu, positives)[,2]
-expect_true(all(trues) > 0) ## FAILS - positive items not evenly distributed!
-
+expect_true(all(trues) > 0) ## NOW PASSES WITH CONSTRAINT NUMBER 12!
 

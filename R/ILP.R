@@ -70,7 +70,7 @@ item_assign_ilp <- function(
   ## The number of triangular constraints:
   n_tris <- choose(n_items, 3) * 3
   ## The number of constraints for constraint (5): The constraint
-  ## numbers are taken from Bulhoes et al. 2017 ("Branch-and-price")
+  ## numbers are taken from Bulhoes et al. 2017 ("Branch-and-price") (not constraints 9-12)
   n_c5 <- 1 # also use to forbid some items from being leaders
   ## The number of constraints for constraint (6):
   n_c6 <- nrow(costs) ## for each decision var x_ij one constraint
@@ -91,9 +91,17 @@ item_assign_ilp <- function(
     need_additional_constraints <- FALSE
   }
 
+  if (m > p && n_leaders_minority >= p) { ## greater equal does not really make sense, because it can be maximum p
+    n_c12 <- n-m # additional constraint that balances the positively coded items among clusters
+    need_additional_constraints2 <- TRUE
+  } else {
+    n_c12 <- 0
+    need_additional_constraints2 <- FALSE
+  }
+
 
   ## Total number of constraints:
-  n_constraints <- n_tris + n_c5 + n_c6 + n_c7 + n_c8 + n_c9 + n_c10 + n_c11
+  n_constraints <- n_tris + n_c5 + n_c6 + n_c7 + n_c8 + n_c9 + n_c10 + n_c11 + n_c12
 
   ## Start constructing the matrix representing the left-hand side of
   ## the constraints. Each column is a decision variable, each row is
@@ -112,6 +120,10 @@ item_assign_ilp <- function(
   )
   if (need_additional_constraints) {
     constraint_names <- c(constraint_names, paste0("c11_", 1:n_c11))
+  }
+
+  if (need_additional_constraints2) {
+    constraint_names <- c(constraint_names, paste0("c12_", 1:n_c12))
   }
 
   rownames(constraints) <- constraint_names
@@ -150,16 +162,29 @@ item_assign_ilp <- function(
 
   # last (?) set of constraints: ensure that each negative item is either cluster leader
   # or connected to other negative item (that is cluster leader)
+  cn <- colnames(constraints)
   if (need_additional_constraints) {
-    cn <- colnames(constraints)
-    for (i in 1:n_c11) {
+    for (i in 1:m) {
       nn <- grep(paste0("x", i, "_|_", i, "_"), cn, value = TRUE)
-      nn <- grep(paste(m+c(1:(n_items-m)), collapse = "|"), nn, value = TRUE, invert = TRUE)
+      nn <- grep(paste(m+c(1:(n_items-m)), collapse = "|"), nn, value = TRUE, invert = TRUE) #only items with low indices
       constraints[paste0("c11_", i), nn] <- 1
       constraints[paste0("c11_", i), paste0("y", i)] <- 1
     }
   }
 
+  ## another constraint if n_leaders_minority >= p: ensure that each group has at least one positively coded item
+  ## by ensuring that each negatively coded item is connected to at least one positively coded item.
+  ## sum(x_ij) >= 1 (i \in negatively coded items; j \in positively coded items)
+  counter <- 1
+  if (need_additional_constraints2) {
+    print("YAPP!")
+    for (i in 1:m) { # indices of negatively coded items
+      nn <- grep(paste0("x", i, "_|_", i, "_"), cn, value = TRUE)
+      nn <- grep(paste("_", (m+1):n, sep = "", collapse = "|"), nn, value = TRUE) # x_ij (i \in negatively coded items; j \in positively coded items)
+      constraints[paste0("c12_", counter), nn] <- 1
+      counter <- counter + 1
+    }
+  }
 
   ## Make the to-be-returned constraint matrix take less storage
   ## as a sparse matrix: (TODO: make it sparse from the beginning)
@@ -174,7 +199,8 @@ item_assign_ilp <- function(
     rep(equal_sign, n_c8),
     rep(equal_sign, n_c9),
     equal_sign,
-    rep(greater_sign, n_c11) # n_c11 can be zero
+    rep(greater_sign, n_c11), # n_c11 can be zero
+    rep(greater_sign, n_c12) # n_c12 can be zero
   )
 
   ## (8) right hand side of the ILP <- many ones
@@ -183,7 +209,8 @@ item_assign_ilp <- function(
     p,
     rep(group_size - 1, n_c9),
     n_leaders_minority,
-    rep(1, n_c11) # n_c11 can be zero
+    rep(1, n_c11), # n_c11 can be zero
+    rep(1, n_c12) # n_c12 can be zero
   )
 
   stopifnot(length(rhs) == length(equalities) && length(rhs) == nrow(constraints))
