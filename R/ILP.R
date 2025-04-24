@@ -92,7 +92,7 @@ item_assign_ilp <- function(
   }
 
   if (m > p && n_leaders_minority >= p) { ## greater equal does not really make sense, because it can be maximum p
-    n_c12 <- n-m # additional constraint that balances the positively coded items among clusters
+    n_c12 <- m # additional constraint that balances the positively coded items among clusters
     need_additional_constraints2 <- TRUE
   } else {
     n_c12 <- 0
@@ -173,7 +173,7 @@ item_assign_ilp <- function(
   }
 
   ## another constraint if n_leaders_minority >= p: ensure that each group has at least one positively coded item
-  ## by ensuring that each negatively coded item is connected to at least one positively coded item.
+  ## by ensuring that each negatively coded item is connected to at least one positively coded
   ## sum(x_ij) >= 1 (i \in negatively coded items; j \in positively coded items)
   counter <- 1
   if (need_additional_constraints2) {
