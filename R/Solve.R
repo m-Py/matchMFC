@@ -171,7 +171,7 @@ solve_ilp_gurobi <- function(ilp, objective, time_limit) {
   model$vtype     <- "B"
 
   ## solve
-  if (argument_exists(time_limit)) {
+  if (!is.null(time_limit)) {
     ilp_solution <- gurobi::gurobi(model, params = list(LogToConsole = 0, TimeLimit = time_limit, MIPGap = 0))
   } else {
     ilp_solution <- gurobi::gurobi(model, params = list(LogToConsole = 0, MIPGap = 0))
