@@ -65,8 +65,6 @@ is_distance_matrix <- function(m) {
   all(lower == upper)
 }
 
-## TODO
-
 # helper funciton to convert category labels to pairwise edges
 category_vector_to_pairlist <- function(x) {
   n_clusters <- length(unique(x))
@@ -78,5 +76,9 @@ category_vector_to_pairlist <- function(x) {
 }
 
 get_partners_ <- function(x, i) {
-  t(combn(which(x == i), 2))
+  relevant_idx <- which(x == i)
+  if (length(relevant_idx) == 1) {
+    return(NULL)
+  }
+  t(combn(relevant_idx, 2))
 }
