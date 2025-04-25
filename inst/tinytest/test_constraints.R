@@ -1,4 +1,5 @@
 library(tinytest)
+library(matchMFC)
 
 ## extreme skew: fewer negatively poled items than there are groups:
 
@@ -33,7 +34,7 @@ group_size_constraints_met <- function(x) {
  # group_size constraints are met
 expect_true(group_size_constraints_met(uu))
 expect_true(length(table(uu)) == p)
-table(uu, positives)
+table(uu, positives) # exactly 3 groups have negatively poled items, as they should
 expect_true(colSums(table(uu, positives))[1] == 3)
 
 
