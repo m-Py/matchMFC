@@ -1,7 +1,7 @@
 #' This is THE function
 #' @param x Matrix / data frame, the data input
 #' @param n The size of the groups
-#' @param scale Vector of length \code{nrow(x)}, scale affiliation of each item
+#' @param scales Vector of length \code{nrow(x)}, scale affiliation of each item
 #' @param positive_polarity Logical vector of length \code{nrow(x)}, is each item positively coded?
 #' @param solver Optional. The solver used to obtain the optimal method.
 #'        Currently supports "glpk", "symphony", "lpSolve" and "gurobi".
@@ -11,7 +11,7 @@
 #'
 #' @importFrom anticlust optimal_anticlustering
 #' @export
-matchMFC <- function(x, n, scale, positive_polarity=NULL, solver = "glpk", time_limit = 120, n_groups_both_polarity=NULL, similarity_matrix = FALSE) {
+matchMFC <- function(x, n, scales, positive_polarity=NULL, solver = "glpk", time_limit = 120, n_groups_both_polarity=NULL, similarity_matrix = FALSE) {
 
   if (!is_distance_matrix(x)) {
     x <- dist(x)
@@ -28,7 +28,7 @@ matchMFC <- function(x, n, scale, positive_polarity=NULL, solver = "glpk", time_
   }
 
   # include cannot-link constraint between items of same scale:
-  x[category_vector_to_pairlist(scale)] <- sum(x) + 1
+  x[category_vector_to_pairlist(scales)] <- sum(x) + 1
 
   if (!is.null(positive_polarity)) {
     # distances, p, solver, positives, n_leaders_minority, objective = "min", time_limit = NULL) {
