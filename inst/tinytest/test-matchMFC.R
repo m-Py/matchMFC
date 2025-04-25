@@ -1,24 +1,26 @@
 library(tinytest)
 library(matchMFC)
 
-N <- 12
+N <- 20
 distances <- as.matrix(dist(rnorm(N)))
 
 skew <- 2
 
-positives <- rep(c(TRUE, FALSE), c(N/2 + skew, N/2 - skew))
-is_in_minority_class <- !positives
+positives <- sample(c(TRUE, FALSE), size = N, replace = TRUE)
 scales <- as.numeric(as.factor(sample(1:3, size = N, replace = TRUE)))
 table(scales)
+#todo if cannot-link constraints can be fulfilled at all (anticlust:::optimal_cannot_link)
+
 sum(!positives)
-n <- 3
+size <- 2
+n_groups <- N/size
 uu <- matchMFC(
-  distances, n = n,
+  distances, size = size,
   scale = scales,
   solver = "glpk",
-  positive_polarity = positives
+  time_limit = 5
 )
-
+table(uu)
 # verify that the three negatively poled items are in separate groups
 group_size_constraints_met <- function(x) {
   tab <- table(x)
@@ -27,6 +29,7 @@ group_size_constraints_met <- function(x) {
 
 # group_size constraints are met
 expect_true(group_size_constraints_met(uu))
-expect_true(length(table(uu)) == N/n)
-table(uu, positives) # exactly 3 groups have negatively poled items, as they should
-expect_true(all(table(scales, uu) <= 1))
+expect_true(all(table(uu) == size))
+table(uu, positives)
+table(scales, uu)
+expect_true(all(table(scales, uu) <= 1)) #cannot be met, oftentimes!

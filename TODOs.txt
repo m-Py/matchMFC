@@ -9,3 +9,7 @@
   * Scalar, logical: Minimization or maximization (i.e., similarity vs. dissimilarity matrix)? (Minimization = default for feature matrix);
   * (Optional) Scalar, number of groups with negatively scaled items.
   * (Optional) Scalar, logical: homogeneity vs. heterogeneity of coding within-groups (default: heterogeneity; otherwise, uses anticlust::balanced_clustering() and adjusts pairwise distances among differently coded items)
+
+- anticlust::optimal_anticlustering throws an error when time limit is exceeded.... TODO do differently
+- better test for reconciliation of different constraints
+

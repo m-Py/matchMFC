@@ -6,8 +6,8 @@
 \usage{
 matchMFC(
   x,
-  n,
-  scale,
+  size,
+  scales,
   positive_polarity = NULL,
   solver = "glpk",
   time_limit = 120,
@@ -18,9 +18,9 @@ matchMFC(
 \arguments{
 \item{x}{Matrix / data frame, the data input}
 
-\item{n}{The size of the groups}
+\item{size}{The size of the groups}
 
-\item{scale}{Vector of length \code{nrow(x)}, scale affiliation of each item}
+\item{scales}{Vector of length \code{nrow(x)}, scale affiliation of each item}
 
 \item{positive_polarity}{Logical vector of length \code{nrow(x)}, is each item positively coded?}
 
