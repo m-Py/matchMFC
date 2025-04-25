@@ -1,4 +1,11 @@
 
 - Add interface function
   * internally handles recoding the distance matrix
-  * how to ask for maximization (for interrater agreements) vs minimization (for average SD)?
+- Arguments:
+  * Matrix: (Dis)similarity matrix or feature matrix
+  * Scalar: number of groups
+  * Vector: Scale of each items
+  * (Optional) Vector, logical: Is each item positively coded (if not passed, uses anticlust::balanced_clustering())
+  * Scalar, logical: Minimization or maximization (i.e., similarity vs. dissimilarity matrix)? (Minimization = default for feature matrix);
+  * (Optional) Scalar, number of groups with negatively scaled items.
+  * (Optional) Scalar, logical: homogeneity vs. heterogeneity of coding within-groups (default: heterogeneity; otherwise, uses anticlust::balanced_clustering() and adjusts pairwise distances among differently coded items)
