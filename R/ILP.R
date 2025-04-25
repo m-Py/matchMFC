@@ -1,6 +1,5 @@
 
 #' Construct the ILP represenation of an MFC item assignment problem
-
 #' @param distances An distance object or matrix representing the
 #'   distances between items
 #' @param p The number of groups to be created

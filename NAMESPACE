@@ -2,4 +2,6 @@
 
 export(item_assign_ilp)
 export(item_assignment)
+export(matchMFC)
 importFrom(Matrix,Matrix)
+importFrom(anticlust,optimal_anticlustering)
