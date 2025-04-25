@@ -23,7 +23,7 @@ matchMFC <- function(x, size, scales, positive_polarity=NULL, solver = "glpk", t
     stop("The data set cannot be split in parts of ", size, ".")
   }
   p <- N/size # p = number of groups, is used later
-  anticlust::anticlustering(x, K = p, cannot_link = category_vector_to_pairlist(scales, duplicated = FALSE))
+  #anticlust::anticlustering(x, K = p, cannot_link = category_vector_to_pairlist(scales, duplicated = FALSE))
 
 
   if (similarity_matrix) {
