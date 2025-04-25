@@ -177,10 +177,9 @@ item_assign_ilp <- function(
   ## sum(x_ij) >= 1 (i \in negatively coded items; j \in positively coded items)
   counter <- 1
   if (need_additional_constraints2) {
-    print("YAPP!")
     for (i in 1:m) { # indices of negatively coded items
       nn <- grep(paste0("x", i, "_|_", i, "_"), cn, value = TRUE)
-      nn <- grep(paste("_", (m+1):n, sep = "", collapse = "|"), nn, value = TRUE) # x_ij (i \in negatively coded items; j \in positively coded items)
+      nn <- grep(paste("_", (m+1):n_items, sep = "", collapse = "|"), nn, value = TRUE) # x_ij (i \in negatively coded items; j \in positively coded items)
       constraints[paste0("c12_", counter), nn] <- 1
       counter <- counter + 1
     }
