@@ -1,7 +1,7 @@
 library(tinytest)
 library(matchMFC)
 
-N <- 15
+N <- 12
 distances <- as.matrix(dist(rnorm(N)))
 
 skew <- 2
@@ -29,3 +29,4 @@ group_size_constraints_met <- function(x) {
 expect_true(group_size_constraints_met(uu))
 expect_true(length(table(uu)) == N/n)
 table(uu, positives) # exactly 3 groups have negatively poled items, as they should
+expect_true(all(table(scales, uu) <= 1))
