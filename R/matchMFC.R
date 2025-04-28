@@ -53,9 +53,11 @@ matchMFC <- function(x, size, scales, positive_polarity=NULL, solver = "glpk", t
     ))
   } else {
     if (similarity_matrix) {
-      x <- -x # uses anticlustering function (for time_limit argument) but does clustering, so we simple negate the input
+      x <- -x
     }
     ## anticlust::optimal_anticlustering throws an error when time limit is exceeded.... TODO do differently
+    ## and anticlust::balanced_clustering() does not have time_limit argument ...
+    ## something needs to change in anticlust to make this work properly (I guess balance_clustering needs time_limit argument)
     return(anticlust::balanced_clustering(x, K = p, method = "ilp", solver = solver))
   }
 }
