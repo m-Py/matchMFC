@@ -171,7 +171,6 @@ anticlust::diversity_objective(distances, my_triplets_opt3) # same!
 
 
 ## This instance currently does not balance the positive items across clusters:
-dput(distances)
 distances <- structure(c(0, 1, 314, 314, 1, 0, 314, 1, 1, 0, 314, 0, 2, 1,
 2, 1, 0, 2, 1, 0, 1, 2, 2, 314, 1, 2, 2, 314, 1, 1, 3, 314, 3,
 2, 1, 3, 314, 1, 314, 314, 1, 0, 314, 1, 1, 0, 314, 0, 2, 1,
