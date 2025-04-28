@@ -15,7 +15,7 @@ matchMFC <- function(x, size, scales, positive_polarity=NULL, solver = "glpk", t
 
 
   if (!is_distance_matrix(x)) {
-    x <- dist(x)
+    x <- dist(x)# Default is Euclidean distance
   }
   x <- as.matrix(x)
   N <- nrow(x)
@@ -34,7 +34,7 @@ matchMFC <- function(x, size, scales, positive_polarity=NULL, solver = "glpk", t
   }
 
   # include cannot-link constraint between items of same scale:
-  x <- anticlust:::edit_distances(x, scales, sum(x) + 1)
+  x[category_vector_to_pairlist(scales)] <- sum(x) + 1
 
   if (!is.null(positive_polarity)) {
     # distances, p, solver, positives, n_leaders_minority, objective = "min", time_limit = NULL) {
