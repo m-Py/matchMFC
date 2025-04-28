@@ -14,6 +14,7 @@
 matchMFC <- function(x, size, scales, positive_polarity=NULL, solver = "glpk", time_limit = 120, n_groups_both_polarity=NULL, similarity_matrix = FALSE) {
 
 
+
   if (!is_distance_matrix(x)) {
     x <- dist(x)# Default is Euclidean distance
   }
@@ -23,7 +24,9 @@ matchMFC <- function(x, size, scales, positive_polarity=NULL, solver = "glpk", t
     stop("The data set cannot be split in parts of ", size, ".")
   }
   p <- N/size # p = number of groups, is used later
-  #anticlust::anticlustering(x, K = p, cannot_link = category_vector_to_pairlist(scales, duplicated = FALSE))
+
+  # all(table(anticlust::categorical_sampling(scales, p), scales) < 2) # should test if scale constraints can be met at all
+
 
 
   if (similarity_matrix) {
