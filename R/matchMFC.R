@@ -34,6 +34,7 @@ matchMFC <- function(x, size, scales, positive_polarity=NULL, solver = "glpk", t
   }
 
   # include cannot-link constraint between items of same scale:
+  scales <- as.numeric(as.factor(scales))
   x[category_vector_to_pairlist(scales)] <- sum(x) + 1
 
   if (!is.null(positive_polarity)) {
