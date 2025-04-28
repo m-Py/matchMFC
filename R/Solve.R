@@ -56,6 +56,14 @@ item_assignment <- function(distances, p, solver, positives, n_leaders_minority,
   solution <- solve_ilp(ilp, objective = objective, solver = solver, time_limit = time_limit)
 
   orderings$groups <- ilp_to_groups(solution, n)
+  if (length(unique(orderings$groups)) == n) {
+    stop("Could not find feasible solution in given time limit.")
+  }
+
+  if (solution$status != 0) {
+    message("Assignment was not provably optimal. Increasing `time_limit` may yield better solution.")
+  }
+
   orderings$groups[order(orderings$original_order)]
 }
 
