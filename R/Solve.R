@@ -34,6 +34,10 @@ item_assignment <- function(distances, p, solver, positives, n_leaders_minority,
     is_in_minority_class <- positives
   }
 
+  if (n_leaders_minority > sum(is_in_minority_class))  {
+    stop("n_groups_both_polarity is larger than the minimum of positive/negative items.")
+  }
+
   # reorder data set
   orderings <- data.frame(original_order = 1:n, new_order = order(is_in_minority_class, decreasing = TRUE))
   distances <- distances[orderings$new_order, orderings$new_order]
