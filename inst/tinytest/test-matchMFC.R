@@ -210,3 +210,36 @@ expect_true(scales_in_different_sets(uu, scales))
 table(positives, uu)
 # restricted condition on distribution of negative items met:
 expect_true(colSums(table(uu, positives) >= 1)[1] == (n_groups - 2))
+
+
+
+
+## Test 8: Pairings of N = 20; considers item polarity; Test arbitrary case that one scale has only one item
+
+
+N <- 20
+distances <- as.matrix(dist(rnorm(N)))
+
+n_scales <- 4
+stopifnot(N %% n_scales == 0) # much harder in general, if the distribution of scales is arbitrary
+scales <- sample(rep_len(1:n_scales, N))
+scales[1] <- 5
+positives <- sample(c(TRUE, FALSE), size = N, replace = TRUE)
+
+size <- 2
+n_groups <- N/size
+uu <- matchMFC(
+  distances,
+  size = size,
+  scale = scales,
+  solver = "glpk",
+  time_limit = 5,
+  positive_polarity = positives
+)
+
+table(uu)
+expect_true(group_size_constraints_met(uu, size))
+table(scales, uu)
+expect_true(scales_in_different_sets(uu, scales))
+expect_true(item_polarities_balanced(uu, n_groups, positives))
+
