@@ -88,9 +88,8 @@ uu <- matchMFC(
 table(uu)
 expect_true(group_size_constraints_met(uu, size))
 table(scales, uu)
-if (scales_in_different_sets(uu, scales)) { #  I assume it may not always work if both scale and polarity constraints are inserted
-  expect_true(item_polarities_balanced(uu, n_groups, positives))
-} #cannot be met, oftentimes for arbitrary scale distribution
+expect_true(scales_in_different_sets(uu, scales))
+expect_true(item_polarities_balanced(uu, n_groups, positives))
 
 ## Test 4: Triplets of N = 21; considers item polarity
 
@@ -117,10 +116,8 @@ table(uu)
 expect_true(group_size_constraints_met(uu, size))
 table(scales, uu)
 table(positives, uu)
-if (scales_in_different_sets(uu, scales)) { #  I assume it may not always work if both scale and polarity constraints are inserted
-  expect_true(item_polarities_balanced(uu, n_groups, positives))
-} #cannot be met, oftentimes for arbitrary scale distribution
-
+expect_true(scales_in_different_sets(uu, scales))#  I assume it may not always work if both scale and polarity constraints are inserted
+expect_true(item_polarities_balanced(uu, n_groups, positives))
 
 ## Test 5: Qartletts of N = 24; considers item polarity
 
@@ -182,39 +179,6 @@ expect_true(scales_in_different_sets(uu, scales))
 table(positives, uu)
 # restricted condition on distribution of negative items met:
 expect_true(colSums(table(uu, positives) >= 1)[1] == (n_groups - 1))
-
-
-
-
-N <- 21
-distances <- as.matrix(dist(rnorm(N)))
-
-n_scales <- 3
-stopifnot(N %% n_scales == 0) # much harder in general, if the distribution of scales is arbitrary
-scales <- sample(rep_len(1:n_scales, N))
-positives <- rep(c(TRUE, FALSE), c(11 ,10))
-
-size <- 3
-n_groups <- N/size
-uu <- matchMFC(
-  distances,
-  size = size,
-  scale = scales,
-  solver = "glpk",
-  time_limit = 5,
-  positive_polarity = positives,
-  n_groups_both_polarity = n_groups - 1
-)
-
-table(uu)
-expect_true(group_size_constraints_met(uu, size))
-table(scales, uu)
-expect_true(scales_in_different_sets(uu, scales))
-table(positives, uu)
-# restricted condition on distribution of negative items met:
-expect_true(colSums(table(uu, positives) >= 1)[1] == (n_groups - 1))
-
-
 
 
 ## Test 7: Quartletts of N = 20; considers item polarity; restricts the distribution of negative vs. positive polarity
