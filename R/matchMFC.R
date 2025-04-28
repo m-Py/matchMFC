@@ -26,6 +26,7 @@ matchMFC <- function(x, size, scales, positive_polarity=NULL, solver = "glpk", t
   p <- N/size # p = number of groups, is used later
 
   # all(table(anticlust::categorical_sampling(scales, p), scales) < 2) # should test if scale constraints can be met at all
+  # should even work on concatenation scale/polarity
 
 
 
