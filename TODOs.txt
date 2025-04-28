@@ -6,3 +6,5 @@
 - test for reconciliation of different constraints (e.g. warning / error when something goes wrong)
 
 - all(table(anticlust::categorical_sampling(scales, p), scales) < 2) -> should test if scale constraints can be met at all (Without considering the constraints on item polarity)
+
+- testing if both types of constraints (scale / polarity) can be fulfilled simultaneously may be done most efficiently (?) with the ILP model by Schulz (2022) when treating both types information as categorical variables
